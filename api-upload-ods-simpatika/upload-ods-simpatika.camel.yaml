@@ -1,0 +1,51 @@
+- rest:
+    id: rest-3f67
+    post:
+      - id: post-2508
+        path: /upload-ods-simpatika
+        to: direct:upload-ods-routes
+        produces: application/json
+        responseMessage:
+          - code: "200"
+            message: OK
+            responseModel: "{\"message\":\"success\"}"
+        security:
+          - key: upload-ods-simpatika
+- route:
+    id: route-9017
+    nodePrefixId: route-7bf
+    from:
+      id: from-9a03
+      uri: direct
+      parameters:
+        name: upload-ods-routes
+      steps:
+        - log:
+            id: log-ab1e
+            message: ${body}
+            logName: data-log
+        - to:
+            id: to-782d
+            uri: kamelet:sftp-sink
+            parameters:
+              connectionHost: 10.33.129.40
+              connectionPort: "22"
+              username: root
+              password: kkaS@#js123j12
+              directoryName: /app/file/ods_simpatika
+              fileExist: Override
+              useUserKnownHostsFile: false
+              autoCreate: true
+              passiveMode: true
+              binary: true
+        - log:
+            id: log-e350
+            message: Data Save Success
+            logName: log-process
+        - setVariable:
+            id: setVariable-6b85
+            name: route:${body}
+            expression:
+              simple:
+                id: simple-3c30
+                expression: "{\"message\":\"success\"}"
