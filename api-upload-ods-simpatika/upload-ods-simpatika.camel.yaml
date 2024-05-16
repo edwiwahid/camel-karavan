@@ -1,16 +1,28 @@
+- restConfiguration:
+    component: platform-http
+    scheme: http
+    host: 0.0.0.0
+    port: "8082"
+    contextPath: /api
+    bindingMode: "off"
 - rest:
     id: rest-3f67
-    post:
-      - id: post-2508
-        path: /upload-ods-simpatika
+    path: /ods-simpatika
+    bindingMode: "off"
+    clientRequestValidation: "true"
+    securityDefinitions:
+      basicAuth:
+        key: Authorization
+    securityRequirements:
+      - key: Basic
+        scopes: put
+      - {}
+    put:
+      - id: put-f53c
+        path: /upload
         to: direct:upload-ods-routes
+        consumes: text/csv
         produces: application/json
-        responseMessage:
-          - code: "200"
-            message: OK
-            responseModel: "{\"message\":\"success\"}"
-        security:
-          - key: upload-ods-simpatika
 - route:
     id: route-9017
     nodePrefixId: route-7bf
@@ -20,10 +32,13 @@
       parameters:
         name: upload-ods-routes
       steps:
-        - log:
-            id: log-ab1e
-            message: ${body}
-            logName: data-log
+        - setHeader:
+            id: setHeader-6ef7
+            name: file
+            expression:
+              simple:
+                id: simple-23ae
+                expression: data-ods-simpatika.csv
         - to:
             id: to-782d
             uri: kamelet:sftp-sink
@@ -32,20 +47,22 @@
               connectionPort: "22"
               username: root
               password: kkaS@#js123j12
-              directoryName: /app/file/ods_simpatika
+              directoryName: ../app/file/ods_simpatika
               fileExist: Override
               useUserKnownHostsFile: false
               autoCreate: true
               passiveMode: true
               binary: true
-        - log:
-            id: log-e350
-            message: Data Save Success
-            logName: log-process
-        - setVariable:
-            id: setVariable-6b85
-            name: route:${body}
+        - setBody:
+            id: setBody-c03e
             expression:
               simple:
-                id: simple-3c30
+                id: simple-c106
                 expression: "{\"message\":\"success\"}"
+        - setHeader:
+            id: setHeader-7511
+            name: Content-Type
+            expression:
+              simple:
+                id: simple-5a28
+                expression: application/json
